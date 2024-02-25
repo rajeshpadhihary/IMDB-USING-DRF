@@ -22,10 +22,8 @@ def Register_Users(request):
             account = serializer.save()
             account.is_active = True
             account.save()
-            token = Token.objects.get_or_create(user=account)[0].key
             return Response(
                 {
-                    "token": token,
                     "message": f"Hii {account.name} you are registered successfully. Having Email_Id : {account.Email_Address}",
                 }
             )
@@ -48,10 +46,11 @@ def Register_Users(request):
 @permission_classes([AllowAny])
 def login_user(request):
     data = {}
-    reqBody = json.loads(request.body)
-    email1 = reqBody["Email_Address"]
+    u_data = request.data
+    # reqBody = json.loads(request.body)
+    email1 = u_data["Email_Address"]
     # print(email1)
-    password = reqBody["password"]
+    password = u_data["password"]
     try:
         Account = Users.objects.get(Email_Address=email1)
     except BaseException as e:

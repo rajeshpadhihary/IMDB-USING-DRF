@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import PlatformForStreaming,Movie,Review
-from user_app.models import Users
 
 class PlatformForStreamingSerializer(serializers.ModelSerializer):
     # movie = MovieSerializer(many = True,read_only = True)
@@ -18,8 +17,7 @@ class PlatformForStreamingSerializer(serializers.ModelSerializer):
         name = validated_data["name"]
         about = validated_data["about"]
         website = validated_data["website"]
-        # platform = PlatformForStreaming.objects.filter(name=name)
-        # web = PlatformForStreaming.objects.filter(website = website)
+      
         if PlatformForStreaming.objects.filter(name=name).exists() or PlatformForStreaming.objects.filter(website = website).exists():
             raise serializers.ValidationError({'error': 'This platform/website is already exists.'})        
         else:
@@ -28,7 +26,7 @@ class PlatformForStreamingSerializer(serializers.ModelSerializer):
         return stream_platform
 
 class MovieSerializer(serializers.ModelSerializer):
-
+    stream_platform = PlatformForStreamingSerializer()
     class Meta:
         model = Movie
         fields = [
@@ -64,24 +62,10 @@ class ReviewSerializer(serializers.ModelSerializer):
             "movie",
             "review_text",
         ]
-
-    def create(self, validated_data):
-        review_user = validated_data["review_user"]
-        rating = validated_data["rating"]
-        title = validated_data["movie"]
-        text = validated_data['review_text']
-
-        if  not Users.objects.filter(Email_Address=review_user).exists():
-            raise serializers.ValidationError("User with this username does not exist.")
-        if not  Movie.objects.filter(title=title).exists():
-            raise serializers.ValidationError("Movie with this title does not exist")
-        
-        movie_review = Review(review_user=review_user,rating=rating,movie=title,review_text=text)
-        movie_review.save()
     
-        return movie_review
     
 class SearchMovieSerializer(serializers.ModelSerializer):
+    stream_platform = PlatformForStreamingSerializer()
     class Meta:
         model = Movie
         fields = ['title','avg_rating','stream_platform','movie_summary']
